@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String @id @default(uuid())
+  username String @unique
+  password String
+}
+
+model Client {
+  id_cliente             Int       @id @default(autoincrement())
+  nome_cliente           String
+  dia_fechamento         Int
+  gestor                 String
+  total_horas_contratadas String
+  cnpj                   String?   @unique
+  suportes              Support[]
+  solicitantes          SolicitanteDemanda[]
+  notas_fiscais         NotaFiscal[]
+}
+
+model SolicitanteDemanda {
+  id_solicitante_demanda   Int       @id @default(autoincrement())
+  cliente                  Client    @relation(fields: [id_cliente], references: [id_cliente])
+  id_cliente              Int
+  nome_solicitante_demanda String
+  suportes                Support[]
+}
+
+model Status {
+  id_status Int      @id @default(autoincrement())
+  status    String
+  suportes  Support[]
+}
+
+model Prioridade {
+  id_prioridade Int      @id @default(autoincrement())
+  prioridade    String
+  suportes      Support[]
+}
+
+model Support {
+  id_suporte            Int               @id @default(autoincrement())
+  cliente               Client            @relation(fields: [id_cliente], references: [id_cliente])
+  id_cliente           Int
+  status               Status            @relation(fields: [id_status], references: [id_status])
+  id_status           Int
+  prioridade           Prioridade        @relation(fields: [id_prioridade], references: [id_prioridade])
+  id_prioridade       Int
+  solicitante_demanda  SolicitanteDemanda @relation(fields: [id_solicitante_demanda], references: [id_solicitante_demanda])
+  id_solicitante_demanda Int
+  primeiro_contato     DateTime?
+  inicio_suporte       DateTime
+  fim_suporte         DateTime
+  data_suporte        DateTime
+  duracao             String
+  nome_tarefa         String
+  descricao_suporte   String
+}
+
+model NotaFiscal {
+  id                Int      @id @default(autoincrement())
+  numero            String
+  codigo_verificacao String
+  data_emissao      DateTime
+  competencia       DateTime
+  valor_servicos    Decimal
+  valor_liquido     Decimal
+  discriminacao     String   @db.Text
+  xml_content       String   @db.Text
+  cliente           Client   @relation(fields: [id_cliente], references: [id_cliente])
+  id_cliente        Int
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  @@unique([numero, codigo_verificacao])
+}
